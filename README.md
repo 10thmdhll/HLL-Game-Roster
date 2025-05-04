@@ -1,1 +1,1 @@
-# HLL-Game-Roster
+# README placeholder

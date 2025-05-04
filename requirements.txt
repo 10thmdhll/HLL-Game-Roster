@@ -1,0 +1,3 @@
+discord-py-interactions
+requests
+google-api-python-client
