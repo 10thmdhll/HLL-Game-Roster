@@ -10,9 +10,9 @@ def test_direct_rcon():
     """
     Test the low-level RCON class directly (UDP or HTTP based on config).
     """
-    host = config.RCON_HOST
-    port = config.RCON_PORT
-    pwd = config.RCON_PASSWORD
+    host = "rcon.10thmd.org"
+    port = 8010
+    pwd = "readonly202505010000000000000000"
     api = "/api/get_live_game_stats"
 
     print(f"\n== Direct RCON Test ==")
