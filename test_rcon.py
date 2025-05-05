@@ -13,18 +13,18 @@ import config
 from hll_rcon import RCON, RCONError
 from rcon_client import fetch_live_players
 
-# Configuration\HOST = os.getenv('RCON_HOST', 'rcon.10thmd.org')
+# Configuration
+HOST = os.getenv('RCON_HOST', 'rcon.10thmd.org')
 PORT = int(os.getenv('RCON_PORT', '8011'))
 PASSWORD = os.getenv('RCON_PASSWORD', 'readonly202505010000000000000000')
-# Always set SERVER for API requests
 SERVER = os.getenv('RCON_SERVER', getattr(config, 'DEFAULT_SERVER', 'HLL Training'))
 API_URL = "http://rcon.10thmd.org:8011/api/get_live_game_stats"
+
 
 def test_http_api():
     """Directly GET the API endpoint with query params to retrieve live game stats."""
     print("\n== HTTP API Direct Test ==", flush=True)
     params = {'password': PASSWORD, 'server': SERVER}
-    # Debug: show URL
     try:
         request = requests.Request('GET', API_URL, params=params).prepare()
         print(f"Requesting URL: {request.url}", flush=True)
@@ -50,7 +50,6 @@ def test_rcon_class():
     config.RCON_API_ENDPOINT = API_URL
     try:
         with RCON(HOST, PORT, PASSWORD) as client:
-            # Debug: confirm endpoint in client
             print(f"RCON client endpoint: {client.api_endpoint}", flush=True)
             out = client.send_command("players")
             print("RCON Class Response:\n", out if out else "<empty>", flush=True)
@@ -69,6 +68,7 @@ def test_helper_fetch():
         print("Error:", err, flush=True)
     except Exception as e:
         print(f"fetch_live_players() Error ({type(e).__name__}): {e}", flush=True)
+
 
 if __name__ == "__main__":
     print("Starting RCON HTTP API tests...", flush=True)
