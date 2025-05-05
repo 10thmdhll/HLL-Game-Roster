@@ -1,9 +1,9 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
 from datetime import datetime
-from sheets_client import fetch_roster_data  # Added import to get player names
+from sheets_client import fetch_roster_data  # fetch sheet rows or mapping
 
-# Fixed canvas width
+# Constants
 CANVAS_WIDTH = 1000
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 FONT_SIZE = 24
@@ -13,14 +13,15 @@ COLUMN_GAP = 40  # space between team columns
 
 os.makedirs("poster_output", exist_ok=True)
 
+
 def measure_text(draw, text, font):
-    """Returns (width, height) of text when drawn with this font."""
+    """Returns width, height of given text with this font."""
     x0, y0, x1, y1 = draw.textbbox((0, 0), text, font=font)
     return x1 - x0, y1 - y0
 
 
 def get_scaled_font(draw, text, max_width, start_size):
-    """Scales down the font size until text width <= max_width."""
+    """Return a font scaled down so text width <= max_width."""
     size = start_size
     font = ImageFont.truetype(FONT_PATH, size)
     w, _ = measure_text(draw, text, font)
@@ -31,76 +32,81 @@ def get_scaled_font(draw, text, max_width, start_size):
     return font
 
 
-def generate_poster(team1, team2, mode):
-    """Generates a poster always 1000px wide. Mode: 'one_team' or 'two_teams'."""
-    # Fetch roster data to map IDs to Names
-    roster_data = fetch_roster_data()
-
-    mode = mode.lower()
-    if mode == "one_team":
-        teams = [team1]
+def generate_poster(team1, team2=None, mode='two_teams'):
+    """
+    Generates a roster poster image, always 1000px wide.
+    team1, team2: lists of squad dicts
+    mode: 'one_team' or 'two_teams'
+    """
+    # Load roster data mapping IDs to row dicts
+    raw_data = fetch_roster_data()
+    roster_map = {}
+    # If fetch_roster_data returns dict of {id: row_dict}
+    if isinstance(raw_data, dict):
+        roster_map = {str(k): v for k, v in raw_data.items()}
     else:
-        teams = [team1, team2]
+        # assume list of dict rows with 'RCON ID' and 'Name'
+        for row in raw_data:
+            pid_val = row.get('RCON ID') or row.get('steam_id') or row.get('id')
+            if pid_val is not None:
+                roster_map[str(pid_val)] = row
 
-    # compute rows per team for height
-    rows_per_team = [sum(1 + len(s.get("players", [])) for s in team) for team in teams]
-    rows = rows_per_team[0] if len(teams) == 1 else max(rows_per_team)
-    canvas_height = MARGIN * 2 + rows * LINE_HEIGHT
+    # Determine teams array
+    mode = mode.lower()
+    teams = [team1] if mode == 'one_team' else [team1, team2 or []]
 
-    # compute column widths based on fixed canvas width
+    # Calculate canvas height
+    rows_counts = [sum(1 + len(s.get('players', [])) for s in t) for t in teams]
+    max_rows = rows_counts[0] if len(teams) == 1 else max(rows_counts)
+    canvas_height = MARGIN * 2 + max_rows * LINE_HEIGHT
+
+    # Column widths
     if len(teams) == 1:
         col_widths = [CANVAS_WIDTH - 2 * MARGIN]
     else:
-        inner_width = CANVAS_WIDTH - 2 * MARGIN - COLUMN_GAP
-        w1 = inner_width // 2
-        w2 = inner_width - w1
-        col_widths = [w1, w2]
+        inner = CANVAS_WIDTH - 2 * MARGIN - COLUMN_GAP
+        half = inner // 2
+        col_widths = [half, inner - half]
 
-    # create image
-    image = Image.new("RGB", (CANVAS_WIDTH, canvas_height), color=(20, 20, 20))
+    # Create image
+    image = Image.new('RGB', (CANVAS_WIDTH, canvas_height), color=(20, 20, 20))
     draw = ImageDraw.Draw(image)
 
-    # draw centered header
-    header = f"HLL Roster - Mode: {mode}"
+    # Draw header
+    header = f"HLL Roster - Mode: {mode.replace('_', ' ').title()}"
     header_font = get_scaled_font(draw, header, CANVAS_WIDTH - 2 * MARGIN, FONT_SIZE)
-    h_w, h_h = measure_text(draw, header, header_font)
-    draw.text(
-        ((CANVAS_WIDTH - h_w) // 2, MARGIN // 2),
-        header,
-        font=header_font,
-        fill=(255, 255, 255)
-    )
+    hw, hh = measure_text(draw, header, header_font)
+    draw.text(((CANVAS_WIDTH - hw) // 2, MARGIN // 2), header, font=header_font, fill=(255, 255, 255))
 
-    # draw columns and content
-    y_start = MARGIN
+    # Draw teams
     for idx, team in enumerate(teams):
-        x_offset = MARGIN + idx * (col_widths[0] + COLUMN_GAP)
-
-        # team label
-        label = f"TEAM {idx+1}"
+        x0 = MARGIN + idx * (col_widths[0] + COLUMN_GAP)
+        y = MARGIN
+        # Team label
+        label = f"Team {idx+1}"
         label_font = get_scaled_font(draw, label, col_widths[idx], FONT_SIZE)
-        draw.text((x_offset, y_start), label, font=label_font, fill=(255, 215, 0))
-        y = y_start + LINE_HEIGHT
-
-        # squads and players
+        draw.text((x0, y), label, font=label_font, fill=(255, 215, 0))
+        y += LINE_HEIGHT
+        # Squads and players
         for squad in team:
-            # squad title
-            title = f"{squad.get('squad', 'Unnamed Squad')}:"
+            title = f"{squad.get('squad', 'Squad')}:"
             title_font = get_scaled_font(draw, title, col_widths[idx], FONT_SIZE)
-            draw.text((x_offset, y), title, font=title_font, fill=(200, 200, 200))
+            draw.text((x0, y), title, font=title_font, fill=(200, 200, 200))
             y += LINE_HEIGHT
-
-            # players (display Name instead of ID)
-            for pid in squad.get("players", []):
-                name = roster_data.get(str(pid), {}).get("Name", str(pid))
-                bullet = f"• {name}"
-                pl_font = get_scaled_font(draw, bullet, col_widths[idx] - 20, FONT_SIZE)
-                draw.text((x_offset + 20, y), bullet, font=pl_font, fill=(180, 180, 180))
+            for pid in squad.get('players', []):
+                # Lookup name from roster_map
+                row = roster_map.get(str(pid), {})
+                display_name = row.get('Name', str(pid))
+                text = f"• {display_name}"
+                player_font = get_scaled_font(draw, text, col_widths[idx] - 20, FONT_SIZE)
+                draw.text((x0 + 20, y), text, font=player_font, fill=(180, 180, 180))
                 y += LINE_HEIGHT
 
-    # save
-    ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    outpath = f"poster_output/poster_{ts}.png"
-    image.save(outpath)
-    image.save("poster_output/poster_latest.png")
-    return outpath
+    # Save image
+    ts = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    out_dir = 'poster_output'
+    os.makedirs(out_dir, exist_ok=True)
+    path = os.path.join(out_dir, f'poster_{ts}.png')
+    image.save(path)
+    image.save(os.path.join(out_dir, 'poster_latest.png'))
+    return path
