@@ -28,6 +28,11 @@ def main():
 
     # Get live players
     players, error = fetch_live_players(server)
+    
+    print("Fetching players from:", server)
+    print("Players returned:", players)
+    print("Error (if any):", error)
+
     if error:
         logging.error(error)
         print(error)
