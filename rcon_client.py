@@ -20,8 +20,8 @@ class RCON:
         response = requests.get(self.url, headers=headers)
         response.raise_for_status()
         data = response.json()
-        if isinstance(data, dict) and "players" in data:
-            players = [p.get("player_id") for p in data["players"] if "player_id" in p]
+        if isinstance(data, dict) and "result" in data:
+            players = [p.get("player_id") for p in data["result"] if "player_id" in p]
         elif isinstance(data, list):
             players = [p.get("player_id") for p in data if "player_id" in p]
         else:
