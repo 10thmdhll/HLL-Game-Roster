@@ -5,6 +5,7 @@ from datetime import datetime
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 FONT_SIZE = 24
 LINE_HEIGHT = 30
+MARGIN = 40
 
 os.makedirs("poster_output", exist_ok=True)
 
@@ -14,7 +15,7 @@ def calculate_image_height(teams):
         for squad in team:
             lines += 1  # squad title
             lines += len(squad['players'])  # one line per player
-    return 100 + lines * LINE_HEIGHT
+    return MARGIN + lines * LINE_HEIGHT + MARGIN
 
 def generate_poster(team1, team2, mode):
     width = 1000
@@ -33,10 +34,11 @@ def generate_poster(team1, team2, mode):
         y = y_offset + 40
 
         for squad in team:
-            draw.text((x_offset, y), f"{squad['squad']}:", font=font, fill=(200, 200, 200))
+            draw.text((x_offset, y), f"{squad.get('squad', 'Unnamed Squad')}:", font=font, fill=(200, 200, 200))
             y += LINE_HEIGHT
-            for player in squad['players']:
-                draw.text((x_offset + 20, y), f"• {player}", font=font, fill=(180, 180, 180))
+            for player in squad.get('players', []):
+                name = str(player)  # ensure it's string and not a Steam ID unintentionally
+                draw.text((x_offset + 20, y), f"• {name}", font=font, fill=(180, 180, 180))
                 y += LINE_HEIGHT
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
