@@ -3,6 +3,11 @@ from google.oauth2.service_account import Credentials
 import config
 
 def fetch_roster_data():
+    """
+    Fetches the 'Main Roster' and 'Squad Designations' sheets and returns a dict mapping RCON ID strings to row dicts,
+    explicitly including the 'Name' column.
+    Debug prints are included to verify rows are being fetched.
+    """
     creds = Credentials.from_service_account_file(
         "secrets/google_service_account.json",
         scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
@@ -11,11 +16,13 @@ def fetch_roster_data():
     sheet = client.open_by_key(config.GOOGLE_SHEET_ID)
 
     main_roster = sheet.worksheet("Main Roster").get_all_records()
+    print(f"Fetched {len(main_roster)} rows from 'Main Roster'")
     designations = sheet.worksheet("Squad Designations").get_all_records()
+    print(f"Fetched {len(designations)} rows from 'Squad Designations'")
 
     role_map = {}
     for row in designations:
-        print(row)
+        print(f"Designation row: {row}")
         key = (
             str(row.get("Company", "")).strip(),
             str(row.get("Platoon", "")).strip(),
@@ -28,9 +35,10 @@ def fetch_roster_data():
 
     roster_data = {}
     for row in main_roster:
-        print(row)
+        print(f"Roster row: {row}")
         sid = str(row.get("RCON ID", "")).strip()
         if not sid:
+            print("Skipping row without RCON ID")
             continue
         Name = str(row.get("Name", "")).strip()
         company = str(row.get("Company", "")).strip()
@@ -41,7 +49,8 @@ def fetch_roster_data():
         key_partial = (Name, company, platoon, "")
         key_minimal = (Name, company, "", "")
         key_member = (Name, "", "", "")
-        role_info = role_map.get(key_full) or role_map.get(key_partial) or role_map.get(key_minimal) or role_map.get(key_member) or {
+        role_info = role_map.get(key_full) or role_map.get(key_partial) or \
+                    role_map.get(key_minimal) or role_map.get(key_member) or {
             "role_type": config.DEFAULT_ROLE_TYPE,
             "squad_size": config.DEFAULT_SQUAD_SIZE
         }
@@ -54,6 +63,5 @@ def fetch_roster_data():
             "role_type": role_info["role_type"],
             "squad_size": role_info["squad_size"]
         }
-        #print(sid)
 
     return roster_data
