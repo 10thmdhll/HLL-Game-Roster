@@ -23,7 +23,7 @@ def fetch_roster_data():
 
     roster_data = {}
     for row in main_roster:
-        sid = row["SteamID"].strip()
+        sid = row["RCON ID"].strip()
         company = row["Company"].strip()
         platoon = row["Platoon"].strip()
         squad = row.get("Squad", "").strip()
