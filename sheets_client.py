@@ -48,5 +48,6 @@ def fetch_roster_data():
             "role_type": role_info["role_type"],
             "squad_size": role_info["squad_size"]
         }
+        print(sid)
 
     return roster_data
