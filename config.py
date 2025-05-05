@@ -30,3 +30,9 @@ POSTER_RETENTION_DAYS = 15
 
 DEFAULT_ROLE_TYPE = "infantry"
 DEFAULT_SQUAD_SIZE = 6
+
+RCON_HOST = {
+    port = 8011,
+    pwd = "readonly202505010000000000000000",
+    api = "config.RCON_API_ENDPOINT"
+    }
