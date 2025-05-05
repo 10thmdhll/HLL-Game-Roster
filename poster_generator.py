@@ -32,24 +32,43 @@ def get_scaled_font(draw, text, max_width, start_size):
     return font
 
 
+def build_roster_map(raw_data):
+    """Normalize various fetch_roster_data formats into a mapping {id_str: row_dict} with at least 'Name'."""
+    roster_map = {}
+    # Case: dict of id -> row dict
+    if isinstance(raw_data, dict):
+        roster_map = {str(k): v for k, v in raw_data.items()}
+    # Case: list of lists (header row + data rows)
+    elif isinstance(raw_data, list) and raw_data and isinstance(raw_data[0], (list, tuple)):
+        header = raw_data[0]
+        # find index positions
+        try:
+            id_idx = header.index('RCON ID')
+        except ValueError:
+            id_idx = header.index('steam_id') if 'steam_id' in header else None
+        name_idx = header.index('Name') if 'Name' in header else None
+        if id_idx is not None and name_idx is not None:
+            for row in raw_data[1:]:
+                if len(row) > max(id_idx, name_idx):
+                    roster_map[str(row[id_idx])] = {'Name': row[name_idx]}
+    # Case: list of dict rows
+    elif isinstance(raw_data, list):
+        for row in raw_data:
+            pid_val = row.get('RCON ID') or row.get('steam_id') or row.get('id')
+            if pid_val is not None:
+                roster_map[str(pid_val)] = row
+    return roster_map
+
+
 def generate_poster(team1, team2=None, mode='two_teams'):
     """
     Generates a roster poster image, always 1000px wide.
     team1, team2: lists of squad dicts
     mode: 'one_team' or 'two_teams'
     """
-    # Load roster data mapping IDs to row dicts
+    # Load and normalize roster data
     raw_data = fetch_roster_data()
-    roster_map = {}
-    # If fetch_roster_data returns dict of {id: row_dict}
-    if isinstance(raw_data, dict):
-        roster_map = {str(k): v for k, v in raw_data.items()}
-    else:
-        # assume list of dict rows with 'RCON ID' and 'Name'
-        for row in raw_data:
-            pid_val = row.get('RCON ID') or row.get('steam_id') or row.get('id')
-            if pid_val is not None:
-                roster_map[str(pid_val)] = row
+    roster_map = build_roster_map(raw_data)
 
     # Determine teams array
     mode = mode.lower()
@@ -76,7 +95,8 @@ def generate_poster(team1, team2=None, mode='two_teams'):
     header = f"HLL Roster - Mode: {mode.replace('_', ' ').title()}"
     header_font = get_scaled_font(draw, header, CANVAS_WIDTH - 2 * MARGIN, FONT_SIZE)
     hw, hh = measure_text(draw, header, header_font)
-    draw.text(((CANVAS_WIDTH - hw) // 2, MARGIN // 2), header, font=header_font, fill=(255, 255, 255))
+    draw.text(((CANVAS_WIDTH - hw) // 2, MARGIN // 2), header,
+              font=header_font, fill=(255, 255, 255))
 
     # Draw teams
     for idx, team in enumerate(teams):
@@ -94,7 +114,6 @@ def generate_poster(team1, team2=None, mode='two_teams'):
             draw.text((x0, y), title, font=title_font, fill=(200, 200, 200))
             y += LINE_HEIGHT
             for pid in squad.get('players', []):
-                # Lookup name from roster_map
                 row = roster_map.get(str(pid), {})
                 display_name = row.get('Name', str(pid))
                 text = f"• {display_name}"
