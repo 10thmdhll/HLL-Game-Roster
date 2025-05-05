@@ -45,7 +45,7 @@ def build_teams(players, roster_data, mode="two_teams"):
         for squad in subgroups:
             squad_dict = {
                 "squad": f"{company}/{platoon}/{squad_name}",
-                "players": [roster_data[pid]["name"] for pid in squad]
+                "players": [roster_data[pid].get("Name", pid) for pid in squad]
             }
 
             if mode == "one_team":
