@@ -43,13 +43,17 @@ def build_teams(players, roster_data, mode="two_teams"):
         subgroups = [group[i:i+max_size] for i in range(0, len(group), max_size)]
 
         for squad in subgroups:
+            squad_dict = {
+                "squad": f"{company}/{platoon}/{squad}",
+                "players": squad
+            }
             if mode == "one_team":
-                team1.append(squad)
+                team1.append(squad_dict)
             else:
                 if team_toggle:
-                    team1.append(squad)
+                    team1.append(squad_dict)
                 else:
-                    team2.append(squad)
+                    team2.append(squad_dict)
                 team_toggle = not team_toggle
 
     return team1, team2
