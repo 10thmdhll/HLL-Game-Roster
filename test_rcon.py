@@ -11,7 +11,7 @@ def test_direct_rcon():
     Test the low-level RCON class directly (UDP or HTTP based on config).
     """
     host = "rcon.10thmd.org"
-    port = 8010
+    port = 8011
     pwd = "readonly202505010000000000000000"
     api = "/api/get_live_game_stats"
 
