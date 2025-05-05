@@ -10,6 +10,15 @@ COLUMN_GAP   = 40  # space between the two team columns
 
 os.makedirs("poster_output", exist_ok=True)
 
+def measure_text(draw, text, font):
+    """
+    Returns (width, height) of text when drawn with this font.
+    Uses textbbox under the hood so it works on all Pillow versions.
+    """
+    x0, y0, x1, y1 = draw.textbbox((0, 0), text, font=font)
+    return x1 - x0, y1 - y0
+
+
 def calculate_image_dimensions(teams):
     """
     Returns (width, height, [col1_width, col2_width]) so that
@@ -31,20 +40,20 @@ def calculate_image_dimensions(teams):
         max_w = 0
         for squad in team:
             # squad title
-            text = f"{squad.get('squad','Unnamed Squad')}:"
-            w, _ = draw.textsize(text, font=font)
+            title = f"{squad.get('squad','Unnamed Squad')}:"
+            w, _ = measure_text(draw, title, font)
             max_w = max(max_w, w)
             # each player
             for player in squad.get("players", []):
-                text = f"• {player}"
-                w, _ = draw.textsize(text, font=font)
-                # account for the indent of 20 px
-                max_w = max(max_w, w + 20)
+                bullet = f"• {player}"
+                w, _ = measure_text(draw, bullet, font)
+                max_w = max(max_w, w + 20)  # account for indent
         col_widths.append(max_w)
 
     # total width = left margin + col1 + gap + col2 + right margin
     width = MARGIN + col_widths[0] + COLUMN_GAP + col_widths[1] + MARGIN
     return width, height, col_widths
+
 
 def generate_poster(team1, team2, mode):
     teams = [team1, team2]
@@ -56,7 +65,7 @@ def generate_poster(team1, team2, mode):
 
     # --- draw centered header ---
     header = f"HLL Roster - Mode: {mode}"
-    h_w, h_h = draw.textsize(header, font=font)
+    h_w, h_h = measure_text(draw, header, font)
     header_x = (width - h_w) // 2
     header_y = MARGIN // 2
     draw.text((header_x, header_y), header, font=font, fill=(255, 255, 255))
@@ -73,7 +82,7 @@ def generate_poster(team1, team2, mode):
 
         # squads and players
         for squad in team:
-            title = f"{squad.get('squad','Unnamed Squad')}:"
+            title = f"{squad.get('squad','Unnamed Squad')}:"  
             draw.text((x_cursor, y), title, font=font, fill=(200, 200, 200))
             y += LINE_HEIGHT
             for player in squad.get("players", []):
@@ -88,16 +97,3 @@ def generate_poster(team1, team2, mode):
     latest    = "poster_output/poster_latest.png"
     image.save(latest)
     return latest
-
-# --- example usage ---
-if __name__ == "__main__":
-    example_team1 = [
-        {"squad":"Alpha", "players":["Alice","Bob"]},
-        {"squad":"Bravo", "players":["Carol","Dave","Eve"]}
-    ]
-    example_team2 = [
-        {"squad":"Charlie","players":["Frank"]},
-        {"squad":"Delta","players":["Grace","Heidi","Ivan","Judy"]}
-    ]
-    path = generate_poster(example_team1, example_team2, mode="one_team")
-    print("Saved:", path)
