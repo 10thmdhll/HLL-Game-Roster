@@ -19,6 +19,21 @@ def measure_text(draw, text, font):
     return x1 - x0, y1 - y0
 
 
+def get_scaled_font(draw, text, max_width, start_size):
+    """
+    Returns an ImageFont instance at or below start_size such that
+    the text fits within max_width.
+    """
+    size = start_size
+    font = ImageFont.truetype(FONT_PATH, size)
+    w, _ = measure_text(draw, text, font)
+    while (w > max_width) and size > 1:
+        size -= 1
+        font = ImageFont.truetype(FONT_PATH, size)
+        w, _ = measure_text(draw, text, font)
+    return font
+
+
 def calculate_image_dimensions(teams):
     """
     Returns (width, height, [col1_width, col2_width]) so that
@@ -33,7 +48,6 @@ def calculate_image_dimensions(teams):
     # --- compute column widths ---
     temp_img = Image.new("RGB", (1, 1))
     draw     = ImageDraw.Draw(temp_img)
-    font     = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     col_widths = []
     for team in teams:
@@ -41,12 +55,14 @@ def calculate_image_dimensions(teams):
         for squad in team:
             # squad title
             title = f"{squad.get('squad','Unnamed Squad')}:"
-            w, _ = measure_text(draw, title, font)
+            font_title = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+            w, _ = measure_text(draw, title, font_title)
             max_w = max(max_w, w)
             # each player
             for player in squad.get("players", []):
                 bullet = f"• {player}"
-                w, _ = measure_text(draw, bullet, font)
+                font_player = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+                w, _ = measure_text(draw, bullet, font_player)
                 max_w = max(max_w, w + 20)  # account for indent
         col_widths.append(max_w)
 
@@ -61,14 +77,14 @@ def generate_poster(team1, team2, mode):
 
     image = Image.new("RGB", (width, height), color=(20, 20, 20))
     draw  = ImageDraw.Draw(image)
-    font  = ImageFont.truetype(FONT_PATH, FONT_SIZE)
 
     # --- draw centered header ---
     header = f"HLL Roster - Mode: {mode}"
-    h_w, h_h = measure_text(draw, header, font)
+    header_font = get_scaled_font(draw, header, width - 2 * MARGIN, FONT_SIZE)
+    h_w, h_h = measure_text(draw, header, header_font)
     header_x = (width - h_w) // 2
     header_y = MARGIN // 2
-    draw.text((header_x, header_y), header, font=font, fill=(255, 255, 255))
+    draw.text((header_x, header_y), header, font=header_font, fill=(255, 255, 255))
 
     # --- draw team columns ---
     y_cursor = MARGIN
@@ -77,17 +93,20 @@ def generate_poster(team1, team2, mode):
 
         # team label
         label = f"TEAM {idx+1}"
-        draw.text((x_cursor, y_cursor), label, font=font, fill=(255, 215, 0))
+        label_font = get_scaled_font(draw, label, col_widths[idx], FONT_SIZE)
+        draw.text((x_cursor, y_cursor), label, font=label_font, fill=(255, 215, 0))
         y = y_cursor + LINE_HEIGHT
 
         # squads and players
         for squad in team:
-            title = f"{squad.get('squad','Unnamed Squad')}:"  
-            draw.text((x_cursor, y), title, font=font, fill=(200, 200, 200))
+            title = f"{squad.get('squad','Unnamed Squad')}:" 
+            title_font = get_scaled_font(draw, title, col_widths[idx], FONT_SIZE)
+            draw.text((x_cursor, y), title, font=title_font, fill=(200, 200, 200))
             y += LINE_HEIGHT
             for player in squad.get("players", []):
                 bullet = f"• {player}"
-                draw.text((x_cursor + 20, y), bullet, font=font, fill=(180, 180, 180))
+                player_font = get_scaled_font(draw, bullet, col_widths[idx] - 20, FONT_SIZE)
+                draw.text((x_cursor + 20, y), bullet, font=player_font, fill=(180, 180, 180))
                 y += LINE_HEIGHT
 
     # --- save files ---
