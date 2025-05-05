@@ -47,8 +47,12 @@ async def roster(
 
     proc = subprocess.run(args, capture_output=True)
     if proc.returncode == 0:
-        embed = discord.Embed(title="Roster Generated", description=f"Server: `{server}`
-Mode: `{mode}`", color=0x00ffcc)
+        embed = discord.Embed(
+            title="Roster Generated",
+            description=f"Server: `{server}`
+Mode: `{mode}`",
+            color=0x00ffcc
+        )
         embed.set_image(url="attachment://poster_latest.png")
         file = discord.File("poster_output/poster_latest.png", filename="poster_latest.png")
         await interaction.followup.send(embed=embed, file=file)
