@@ -20,7 +20,7 @@ def main():
     pwd  = "readonly202505010000000000000000",
     name =  "10th MD Training Server"
 
-    print(f"Testing RCON to {host}:{port}…")
+    print(f"Testing RCON to {host}…")
     try:
         with RCON(host, pwd) as client:
             resp = client.send_command("players")  # or any valid HLL RCON command
