@@ -34,6 +34,9 @@ def fetch_live_players(server_name):
         with RCON(server['host'], server['port'], server['password']) as rcon:
             response = rcon.send_command('Players')
             players = response.strip().splitlines()
+            print("Live player fetch called for:", server_name)
+            print("Response from RCON API:\n", response)
+            print("Parsed SteamIDs:\n", steam_ids)
             return players, None
     except Exception as e:
         logging.error(f"Failed to fetch players from API for '{server_name}': {e}")
