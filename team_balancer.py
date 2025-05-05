@@ -37,14 +37,14 @@ def build_teams(players, roster_data, mode="two_teams"):
 
     for key, group in roles.items():
         role_info = role_infos.get(key, {})
-        role_type = role_info.get("role_type", "infantry")
+        role_type, company, platoon, squad_name = key
         max_size = role_info.get("squad_size", 6 if role_type == "infantry" else 3)
 
         subgroups = [group[i:i+max_size] for i in range(0, len(group), max_size)]
 
         for squad in subgroups:
             squad_dict = {
-                "squad": f"{company}/{platoon}/{squad}",
+                "squad": f"{company}/{platoon}/{squad_name}",
                 "players": squad
             }
             if mode == "one_team":
