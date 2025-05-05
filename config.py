@@ -3,14 +3,14 @@ DEFAULT_SERVER = "HLL Training"
 
 SERVERS = {
     "HLL Training": {
-        "host": "192.169.95.10",
-        "port": 27230,
-        "password": "1c8xr"
+        "host": "rcon.10thmd.org",
+        "port": 8010,
+        "password": "fd4171e8-e0c7-4f84-995a-1f0171e5a7c5"
     },
     "HLL East":{
-        "host": "192.169.95.98",
-        "port": 27775,
-        "password": "h1627"
+        "host": "rcon.10thmd.org",
+        "port": 8011,
+        "password": "fd4171e8-e0c7-4f84-995a-1f0171e5a7c5"
     }
 }
 
