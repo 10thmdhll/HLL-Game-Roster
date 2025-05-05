@@ -1,6 +1,6 @@
 import config
 import logging
-from hll_rcon import RCON
+from hll_rcon import RCON, RCONError
 
 def fetch_live_players(server_name):
     server = config.SERVERS[server_name]
