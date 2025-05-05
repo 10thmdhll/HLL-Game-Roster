@@ -1,20 +1,33 @@
+import os
 import discord
-from discord.ext import commands
+from discord import app_commands
 import subprocess
+import config
 
-intents = discord.Intents.default()
-bot = commands.Bot(command_prefix="!", intents=intents)
+class MyClient(discord.Client):
+    def __init__(self):
+        super().__init__(intents=discord.Intents.default())
+        self.tree = app_commands.CommandTree(self)
 
-@bot.tree.command(
-    name="roster",
-    description="Generate and post the current roster."
-)
+    async def on_ready(self):
+        print(f"Logged in as {self.user} (ID: {self.user.id})")
+        await self.tree.sync()
+        print("Slash commands synced.")
+
+client = MyClient()
+
+@client.tree.command(name="roster", description="Generate and post the current roster.")
 @app_commands.describe(
-    choice="Server",
-    description="Pick which HLL Server to look for players"
+    server="Select the HLL server to pull from",
+    mode="Choose 'one_team' or 'two_teams'"
 )
-async def roster(ctx, server: str = None, mode: str = "two_teams"):
-    await ctx.defer()
+async def roster(
+    interaction: discord.Interaction,
+    server: str = None,
+    mode: str = "two_teams"
+):
+    await interaction.response.defer()
+
     args = ["python", "main.py"]
     if server:
         args.append(server)
@@ -23,8 +36,32 @@ async def roster(ctx, server: str = None, mode: str = "two_teams"):
 
     proc = subprocess.run(args, capture_output=True)
     if proc.returncode == 0:
-        await ctx.send(file=discord.File("poster_output/poster_latest.png"))
+        await interaction.followup.send(file=discord.File("poster_output/poster_latest.png"))
     else:
-        await ctx.send(f"Roster generation failed. Error: {proc.stderr.decode()}")
+        error_msg = proc.stderr.decode().strip().splitlines()[-1] if proc.stderr else "Unknown error."
+        await interaction.followup.send(f"Roster generation failed: `{error_msg}`")
 
-bot.run("YOUR_DISCORD_BOT_TOKEN")
+@roster.autocomplete("server")
+async def server_autocomplete(
+    interaction: discord.Interaction,
+    current: str
+) -> list[app_commands.Choice[str]]:
+    return [
+        app_commands.Choice(name=name, value=name)
+        for name in config.SERVERS.keys()
+        if current.lower() in name.lower()
+    ]
+
+@roster.autocomplete("mode")
+async def mode_autocomplete(
+    interaction: discord.Interaction,
+    current: str
+) -> list[app_commands.Choice[str]]:
+    options = getattr(config, "ROSTER_MODES", ["one_team", "two_teams"])
+    return [
+        app_commands.Choice(name=opt.replace("_", " ").title(), value=opt)
+        for opt in options
+        if current.lower() in opt.lower()
+    ]
+
+client.run(os.getenv("DISCORD_BOT_TOKEN"))
