@@ -16,9 +16,10 @@ def fetch_live_players(server_name):
 
 # test_rcon.py
 def main():
-    host = config.RCON_HOST      # e.g. "127.0.0.1"
-    port = config.RCON_PORT      # e.g. 27015
-    pwd  = config.RCON_PASSWORD  # your server’s RCON password
+    host = "rcon.10thmd.org"
+    port = 8010
+    pwd  = "readonly202505010000000000000000",
+    name =  "10th MD Training Server"
 
     print(f"Testing RCON to {host}:{port}…")
     try:
