@@ -126,3 +126,9 @@ def generate_poster(team1, team2=None, mode='two_teams'):
     image.save(path)
     image.save(os.path.join(out_dir, 'poster_latest.png'))
     return path
+    
+if __name__ == "__main__":
+    # test that fetch_roster_data is wired in correctly
+    from sheets_client import fetch_roster_data
+    nm = fetch_roster_data()
+    print("DEBUG name_map preview:", dict(list(nm.items())[:5]))

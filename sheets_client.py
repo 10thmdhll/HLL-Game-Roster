@@ -72,8 +72,3 @@ def fetch_roster_data():
     except Exception as e:
         print(f"fetch_roster_data: exception: {e}")
         raise
-
-if __name__ == "__main__":
-    # stand-alone test harness
-    data = fetch_roster_data()
-    print("Returned roster_data:", data)
