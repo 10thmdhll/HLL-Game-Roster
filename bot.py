@@ -49,9 +49,7 @@ async def roster(
     if proc.returncode == 0:
         embed = discord.Embed(
             title="Roster Generated",
-            description=(f"Server: `{server}`
-"
-                         f"Mode: `{mode}`"),
+            description=f"Server: `{server}`\nMode: `{mode}`",
             color=0x00ffcc
         )
         embed.set_image(url="attachment://poster_latest.png")
