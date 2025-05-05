@@ -15,6 +15,7 @@ def fetch_roster_data():
 
     role_map = {}
     for row in designations:
+        print(row)
         key = (
             str(row.get("Company", "")).strip(),
             str(row.get("Platoon", "")).strip(),
@@ -27,6 +28,7 @@ def fetch_roster_data():
 
     roster_data = {}
     for row in main_roster:
+        print(row)
         sid = str(row.get("RCON ID", "")).strip()
         if not sid:
             continue
