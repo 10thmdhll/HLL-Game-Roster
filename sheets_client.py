@@ -38,7 +38,8 @@ def fetch_roster_data():
         key_full = (Name, company, platoon, squad)
         key_partial = (Name, company, platoon, "")
         key_minimal = (Name, company, "", "")
-        role_info = role_map.get(key_full) or role_map.get(key_partial) or role_map.get(key_minimal) or {
+        key_member = (Name, "", "", "")
+        role_info = role_map.get(key_full) or role_map.get(key_partial) or role_map.get(key_minimal) or role_map.get(key_member) or {
             "role_type": config.DEFAULT_ROLE_TYPE,
             "squad_size": config.DEFAULT_SQUAD_SIZE
         }
