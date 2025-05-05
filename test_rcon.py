@@ -2,18 +2,21 @@
 # Quick harness to verify both HTTP and UDP RCON functionality
 
 import config
+# Override RCON API endpoint for this test
+config.RCON_API_ENDPOINT = "http://rcon.10thmd.org:8011/api/get_live_game_stats"
+
 from hll_rcon import RCON, RCONError
 from rcon_client import fetch_live_players
 
 
 def test_direct_rcon():
     """
-    Test the low-level RCON class directly (UDP or HTTP based on config).
+    Test the low-level RCON class directly (HTTP via API endpoint).
     """
-    host = "rcon.10thmd.org"
-    port = 8011
-    pwd = "readonly202505010000000000000000"
-    api = "get_live_game_stats"
+    host = config.RCON_HOST
+    port = config.RCON_PORT
+    pwd = config.RCON_PASSWORD
+    api = config.RCON_API_ENDPOINT
 
     print(f"\n== Direct RCON Test ==")
     print(f"Host: {host}\nPort: {port}\nPassword: {'*' * len(pwd)}\nAPI Endpoint: {api}")
@@ -35,6 +38,7 @@ def test_helper_fetch():
     """
     Test the convenience helper fetch_live_players() from rcon_client.
     """
+    # Ensure helper uses same endpoint override
     print(f"\n== fetch_live_players() Test ==")
     try:
         players, err = fetch_live_players(config.DEFAULT_SERVER)
