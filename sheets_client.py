@@ -35,7 +35,7 @@ def fetch_roster_data():
         platoon = str(row["Platoon"]).strip()
         squad = str(row.get("Squad", "")).strip()
 
-        key_full = (name, company, platoon, squad)
+        key_full = (Name, company, platoon, squad)
         key_partial = (Name, company, platoon, "")
         role_info = role_map.get(key_full) or role_map.get(key_partial) or {
             "role_type": config.DEFAULT_ROLE_TYPE,
