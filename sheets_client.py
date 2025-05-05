@@ -30,18 +30,20 @@ def fetch_roster_data():
         sid = str(row.get("RCON ID", "")).strip()
         if not sid:
             continue
+        name: str(row["Name"]).strip()
         company = str(row["Company"]).strip()
         platoon = str(row["Platoon"]).strip()
         squad = str(row.get("Squad", "")).strip()
 
-        key_full = (company, platoon, squad)
-        key_partial = (company, platoon, "")
+        key_full = (name, company, platoon, squad)
+        key_partial = (name, company, platoon, "")
         role_info = role_map.get(key_full) or role_map.get(key_partial) or {
             "role_type": config.DEFAULT_ROLE_TYPE,
             "squad_size": config.DEFAULT_SQUAD_SIZE
         }
 
         roster_data[sid] = {
+            "name": name,
             "company": company,
             "platoon": platoon,
             "squad": squad,
