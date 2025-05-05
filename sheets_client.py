@@ -30,7 +30,7 @@ def fetch_roster_data():
         sid = str(row.get("RCON ID", "")).strip()
         if not sid:
             continue
-        Name: str(row["Name"]).strip()
+        Name: str(row.get(["Name", ""])).strip()
         company = str(row["Company"]).strip()
         platoon = str(row["Platoon"]).strip()
         squad = str(row.get("Squad", "")).strip()
