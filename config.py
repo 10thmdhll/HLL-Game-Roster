@@ -30,9 +30,3 @@ POSTER_RETENTION_DAYS = 15
 
 DEFAULT_ROLE_TYPE = "infantry"
 DEFAULT_SQUAD_SIZE = 6
-
-RCON_HOST = "rcon.10thmd.org"
-RCON_PORT = 8011
-RCON_PASSWORD = "readonly202505010000000000000000",
-RCON_API_ENDPOINT = "http://rcon.10thmd.org:8011/api/get_live_game_stats"
-DEFAULT_SERVER = "HLL Training"
