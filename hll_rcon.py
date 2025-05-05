@@ -1,14 +1,20 @@
 import requests
 import json
+import config
 
 class RCONError(Exception):
     """Exception raised for RCON errors."""
     pass
 
 class RCON:
+    """
+    RCON client over HTTP API endpoint.
+    Fetches live game stats, then extracts player IDs.
+    """
     def __init__(self, host, port, password):
-        self.url = f"http://{host}:{port}/api/get_live_game_stats"
-        self.token = password
+        # Construct API endpoint from host and port
+        self.api_endpoint = f"http://{host}:{port}/api/get_live_game_stats"
+        self.password = password
 
     def __enter__(self):
         return self
@@ -17,23 +23,23 @@ class RCON:
         pass
 
     def send_command(self, command):
-        if command.lower() != "players":
-            raise NotImplementedError("Only 'Players' command is supported via API.")
-        headers = {"Authorization": f"Bearer {self.token}"}
-        response = requests.get(self.url, headers=headers)
-        response.raise_for_status()
-
+        # Only 'players' command is supported; command argument is ignored
+        params = {'password': self.password}
         try:
-            data = response.json()
-        except json.JSONDecodeError:
-            data = json.loads(response.text)
-
-        players = []
-        if "result" in data:
-            result = data["result"]
-            if isinstance(result, list):
-                players = [p.get("player_id") for p in result if "player_id" in p]
-            elif isinstance(result, dict) and "stats" in result:
-                players = [p.get("player_id") for p in result["stats"] if "player_id" in p]
-
-        return "\n".join([p for p in players if p])
+            resp = requests.get(self.api_endpoint, params=params, timeout=10)
+            resp.raise_for_status()
+        except requests.RequestException as e:
+            raise RCONError(f"HTTP API request failed: {e}")
+        try:
+            data = resp.json()
+        except json.JSONDecodeError as e:
+            raise RCONError(f"Invalid JSON response: {e}")
+        # Parse stats array
+        result = data.get('result', {})
+        stats = result.get('stats') if isinstance(result, dict) else None
+        if stats is None and isinstance(data, list):
+            stats = data
+        stats = stats or []
+        # Extract and return player_id values
+        ids = [str(item['player_id']) for item in stats if 'player_id' in item]
+        return "".join(ids)
