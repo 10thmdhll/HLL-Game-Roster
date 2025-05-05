@@ -12,26 +12,3 @@ def fetch_live_players(server_name):
     except Exception as e:
         logging.error(f"Failed to fetch players from API for '{server_name}': {e}")
         return [], str(e)
-
-
-# test_rcon.py
-def main():
-    host = "rcon.10thmd.org:8010/api/get_live_game_stats"
-    pwd  = "readonly202505010000000000000000",
-    name =  "10th MD Training Server"
-
-    print(f"Testing RCON to {host}…")
-    try:
-        with RCON(host, pwd) as client:
-            resp = client.send_command("players")  # or any valid HLL RCON command
-            if resp:
-                print("RCON response:\n", resp)
-            else:
-                print("RCON returned no data.")
-    except RCONError as e:
-        print("RCONError:", e)
-    except Exception as e:
-        print("Unexpected error:", e)
-
-if __name__ == "__main__":
-    main()
