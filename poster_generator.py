@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
 from datetime import datetime
-from sheets_client import fetch_roster_data  # fetch sheet rows or mapping
+from sheets_client import fetch_roster_data
 
 # Constants
 CANVAS_WIDTH = 1000
@@ -12,7 +12,6 @@ MARGIN = 40
 COLUMN_GAP = 40  # space between team columns
 
 os.makedirs("poster_output", exist_ok=True)
-
 
 def measure_text(draw, text, font):
     """Returns width, height of given text with this font."""
@@ -32,32 +31,32 @@ def get_scaled_font(draw, text, max_width, start_size):
     return font
 
 
-def build_roster_map(raw_data):
-    """Normalize various fetch_roster_data formats into a mapping {id_str: row_dict} with at least 'Name'."""
-    roster_map = {}
-    # Case: dict of id -> row dict
+def build_name_map(raw_data):
+    """Builds a simple mapping of ID strings to Name strings from fetch_roster_data output."""
+    name_map = {}
+    # If dict mapping id -> row dict
     if isinstance(raw_data, dict):
-        roster_map = {str(k): v for k, v in raw_data.items()}
-    # Case: list of lists (header row + data rows)
+        for k, v in raw_data.items():
+            # v should be a dict with 'Name'
+            name_map[str(k)] = v.get('Name', '') if isinstance(v, dict) else ''
+    # If list of lists: first row is header
     elif isinstance(raw_data, list) and raw_data and isinstance(raw_data[0], (list, tuple)):
         header = raw_data[0]
-        # find index positions
         try:
             id_idx = header.index('RCON ID')
+            name_idx = header.index('Name')
         except ValueError:
-            id_idx = header.index('steam_id') if 'steam_id' in header else None
-        name_idx = header.index('Name') if 'Name' in header else None
-        if id_idx is not None and name_idx is not None:
-            for row in raw_data[1:]:
-                if len(row) > max(id_idx, name_idx):
-                    roster_map[str(row[id_idx])] = {'Name': row[name_idx]}
-    # Case: list of dict rows
+            return name_map
+        for row in raw_data[1:]:
+            if len(row) > max(id_idx, name_idx):
+                name_map[str(row[id_idx])] = row[name_idx]
+    # If list of dicts
     elif isinstance(raw_data, list):
         for row in raw_data:
-            pid_val = row.get('RCON ID') or row.get('steam_id') or row.get('id')
-            if pid_val is not None:
-                roster_map[str(pid_val)] = row
-    return roster_map
+            pid = row.get('RCON ID') or row.get('steam_id') or row.get('id')
+            if pid is not None:
+                name_map[str(pid)] = row.get('Name', '')
+    return name_map
 
 
 def generate_poster(team1, team2=None, mode='two_teams'):
@@ -66,15 +65,14 @@ def generate_poster(team1, team2=None, mode='two_teams'):
     team1, team2: lists of squad dicts
     mode: 'one_team' or 'two_teams'
     """
-    # Load and normalize roster data
     raw_data = fetch_roster_data()
-    roster_map = build_roster_map(raw_data)
+    print(raw_data)
+    name_map = build_name_map(raw_data)
 
-    # Determine teams array
     mode = mode.lower()
     teams = [team1] if mode == 'one_team' else [team1, team2 or []]
 
-    # Calculate canvas height
+    # Compute height
     rows_counts = [sum(1 + len(s.get('players', [])) for s in t) for t in teams]
     max_rows = rows_counts[0] if len(teams) == 1 else max(rows_counts)
     canvas_height = MARGIN * 2 + max_rows * LINE_HEIGHT
@@ -91,7 +89,7 @@ def generate_poster(team1, team2=None, mode='two_teams'):
     image = Image.new('RGB', (CANVAS_WIDTH, canvas_height), color=(20, 20, 20))
     draw = ImageDraw.Draw(image)
 
-    # Draw header
+    # Header
     header = f"HLL Roster - Mode: {mode.replace('_', ' ').title()}"
     header_font = get_scaled_font(draw, header, CANVAS_WIDTH - 2 * MARGIN, FONT_SIZE)
     hw, hh = measure_text(draw, header, header_font)
@@ -107,21 +105,20 @@ def generate_poster(team1, team2=None, mode='two_teams'):
         label_font = get_scaled_font(draw, label, col_widths[idx], FONT_SIZE)
         draw.text((x0, y), label, font=label_font, fill=(255, 215, 0))
         y += LINE_HEIGHT
-        # Squads and players
+        # Squads & players
         for squad in team:
             title = f"{squad.get('squad', 'Squad')}:"
             title_font = get_scaled_font(draw, title, col_widths[idx], FONT_SIZE)
             draw.text((x0, y), title, font=title_font, fill=(200, 200, 200))
             y += LINE_HEIGHT
             for pid in squad.get('players', []):
-                row = roster_map.get(str(pid), {})
-                display_name = row.get('Name', str(pid))
-                text = f"• {display_name}"
-                player_font = get_scaled_font(draw, text, col_widths[idx] - 20, FONT_SIZE)
-                draw.text((x0 + 20, y), text, font=player_font, fill=(180, 180, 180))
+                display = name_map.get(str(pid)) or str(pid)
+                line = f"• {display}"
+                font = get_scaled_font(draw, line, col_widths[idx] - 20, FONT_SIZE)
+                draw.text((x0 + 20, y), line, font=font, fill=(180, 180, 180))
                 y += LINE_HEIGHT
 
-    # Save image
+    # Save
     ts = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     out_dir = 'poster_output'
     os.makedirs(out_dir, exist_ok=True)
