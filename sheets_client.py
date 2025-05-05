@@ -27,7 +27,7 @@ def fetch_roster_data():
 
     roster_data = {}
     for row in main_roster:
-        sid = str(row.get("RCON ID", ""))).strip()
+        sid = str(row.get("RCON ID", "")).strip()
         if not sid:
             continue
         company = str(row["Company"]).strip()
