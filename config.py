@@ -1,15 +1,20 @@
-GOOGLE_SHEET_ID = "your_google_sheet_id_here"
-DEFAULT_SERVER = "event_server"
+GOOGLE_SHEET_ID = "1gSscLMptifdgKqfJ469vaX1EbriyZZqBE3Pqgjx0sro"
+DEFAULT_SERVER = "HLL Training"
 
 SERVERS = {
-    "event_server": {
-        "host": "127.0.0.1",
-        "port": 12345,
-        "password": "your_rcon_password"
+    "HLL Training": {
+        "host": "192.169.95.10",
+        "port": 27230,
+        "password": "1c8xr"
+    },
+    "HLL East":{
+        "host": "192.169.95.98",
+        "port": 27775,
+        "password": "h1627"
     }
 }
 
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/..."
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1368969836423680041/E0EbnemcVt7U75xgqtNS0y8M9l6M2DSj5MY2Wy-jz63LSaqDYJFfVPKRL09tvQB0ZKsp"
 
 EVENT_NAME = "Unit Training Event"
 SERVER_NAME = "10th MD Event Server"
