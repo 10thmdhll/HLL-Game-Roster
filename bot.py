@@ -54,7 +54,8 @@ async def roster(
                 color=0x00ffcc
             )
             embed.set_image(url="attachment://poster_latest.png")
-            file = discord.File("poster_output/poster_latest.png", filename="poster_latest.png")
+            #file = discord.File("poster_output/poster_latest.png", filename="poster_latest.png")
+            #await interaction.followup.send(embed=embed, file=file)
             await interaction.followup.send(embed=embed, file=file)
         else:
             await interaction.followup.send("Roster image could not be generated.")
