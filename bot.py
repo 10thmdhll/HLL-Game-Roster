@@ -3,6 +3,7 @@ import discord
 from discord import app_commands
 import subprocess
 import config
+from dotenv import load_dotenv
 
 class MyClient(discord.Client):
     def __init__(self):
@@ -64,4 +65,5 @@ async def mode_autocomplete(
         if current.lower() in opt.lower()
     ]
 
+load_dotenv()
 client.run(os.getenv("DISCORD_BOT_TOKEN"))
