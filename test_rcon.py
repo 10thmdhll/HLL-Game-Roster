@@ -74,4 +74,5 @@ if __name__ == "__main__":
     test_http_api()
     test_rcon_class()
     test_helper_fetch()
-    print("RCON HTTP API tests complete
+    print("RCON HTTP API tests complete.", flush=True)
+    sys.exit(0)
