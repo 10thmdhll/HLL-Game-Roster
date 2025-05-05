@@ -1,6 +1,10 @@
 import requests
 import json
 
+class RCONError(Exception):
+    """Exception raised for RCON errors."""
+    pass
+
 class RCON:
     def __init__(self, host, port, password):
         self.url = f"http://{host}:{port}/api/get_live_game_stats"
