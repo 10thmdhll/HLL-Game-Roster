@@ -1,78 +1,83 @@
-#!/usr/bin/env python3
-# test_rcon.py
-"""
-Test the RCON HTTP API endpoint directly and via the RCON class and helper.
-"""
-
-import sys
-print("=== test_rcon.py loaded ===", flush=True)
-
-import os
+import socket
+import logging
 import requests
 import config
-from hll_rcon import RCON, RCONError
-from rcon_client import fetch_live_players
 
-# Configuration
-HOST = os.getenv('RCON_HOST', 'rcon.10thmd.org')
-PORT = int(os.getenv('RCON_PORT', '8011'))
-PASSWORD = os.getenv('RCON_PASSWORD', 'readonly202505010000000000000000')
-SERVER = os.getenv('RCON_SERVER', getattr(config, 'DEFAULT_SERVER', 'HLL Training'))
-API_URL = "http://rcon.10thmd.org:8011/api/get_live_game_stats"
+class RCONError(Exception):
+    """Exception raised for RCON errors."""
+    pass
 
+class RCON:
+    """
+    RCON client supporting both direct UDP socket and HTTP API endpoint.
+    If config.RCON_API_ENDPOINT is set, commands are sent via HTTP GET with password and optional server param.
+    Otherwise, falls back to UDP socket to host:port.
+    """
+    def __init__(self, host: str, port: int, password: str, timeout: float = 3.0):
+        self.host = host
+        self.port = port
+        self.password = password
+        self.timeout = timeout
+        self.sock = None
+        self.api_endpoint = getattr(config, 'RCON_API_ENDPOINT', None)
 
-def test_http_api():
-    """Directly GET the API endpoint with query params to retrieve live game stats."""
-    print("\n== HTTP API Direct Test ==", flush=True)
-    params = {'password': PASSWORD, 'server': SERVER}
-    try:
-        request = requests.Request('GET', API_URL, params=params).prepare()
-        print(f"Requesting URL: {request.url}", flush=True)
-    except Exception as e:
-        print(f"Error preparing request URL: {e}", flush=True)
-        return
-    try:
-        resp = requests.get(API_URL, params=params, timeout=10)
-        print(f"Response URL: {resp.url}", flush=True)
-        print(f"Status Code: {resp.status_code}", flush=True)
-        print("Response Body:\n", resp.text, flush=True)
-    except requests.exceptions.ReadTimeout as e:
-        print(f"HTTP API ReadTimeout when connecting to {API_URL}: {e}", flush=True)
-    except requests.exceptions.RequestException as e:
-        print(f"HTTP API RequestException: {type(e).__name__}: {e}", flush=True)
-    except Exception as e:
-        print(f"HTTP API Unexpected Error ({type(e).__name__}): {e}", flush=True)
+    def __enter__(self):
+        if self.api_endpoint:
+            # verify endpoint reachable
+            try:
+                resp = requests.options(self.api_endpoint, timeout=self.timeout)
+                resp.raise_for_status()
+                logging.debug(f"RCON API endpoint reachable: {self.api_endpoint}")
+            except Exception as e:
+                raise RCONError(f"Cannot reach RCON API endpoint: {e}")
+            return self
+        # fallback to UDP
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.settimeout(self.timeout)
+        # Optional auth via UDP
+        auth_resp = self._send_udp(self.password)
+        if 'Invalid password' in auth_resp:
+            raise RCONError("RCON authentication failed (invalid password)")
+        return self
 
+    def send_command(self, command: str) -> str:
+        """Send a command and return the server's response as text."""
+        if self.api_endpoint:
+            return self._send_http(command)
+        return self._send_udp(command)
 
-def test_rcon_class():
-    """Test the RCON class using HTTP API endpoint override."""
-    print("\n== RCON Class Test (HTTP) ==", flush=True)
-    config.RCON_API_ENDPOINT = API_URL
-    try:
-        with RCON(HOST, PORT, PASSWORD) as client:
-            print(f"RCON client endpoint: {client.api_endpoint}", flush=True)
-            out = client.send_command("players")
-            print("RCON Class Response:\n", out if out else "<empty>", flush=True)
-    except RCONError as e:
-        print(f"RCONError: {e}", flush=True)
-    except Exception as e:
-        print(f"RCON Unexpected Error ({type(e).__name__}): {e}", flush=True)
+    def _send_udp(self, payload: str) -> str:
+        try:
+            data_out = payload.encode('utf-8')
+            self.sock.sendto(data_out, (self.host, self.port))
+            logging.debug(f"RCON UDP → {self.host}:{self.port}: {data_out}")
+            data, _ = self.sock.recvfrom(4096)
+            logging.debug(f"RCON UDP ← {data}")
+            return data.decode('utf-8', errors='ignore')
+        except socket.timeout:
+            logging.error(f"RCON UDP request to {self.host}:{self.port} timed out")
+            return ''
+        except Exception as e:
+            logging.error(f"RCON UDP error: {e}")
+            return ''
 
+    def _send_http(self, command: str) -> str:
+        try:
+            # Build query parameters
+            params = {'password': self.password}
+            if hasattr(config, 'DEFAULT_SERVER') and config.DEFAULT_SERVER:
+                params['server'] = config.DEFAULT_SERVER
+            # Optionally include command if endpoint supports it
+            params['command'] = command
+            resp = requests.get(self.api_endpoint, params=params, timeout=self.timeout)
+            logging.debug(f"RCON HTTP GET → {resp.url}")
+            resp.raise_for_status()
+            logging.debug(f"RCON HTTP ← status {resp.status_code}, body {resp.text}")
+            return resp.text
+        except Exception as e:
+            logging.error(f"RCON HTTP error: {e}")
+            return ''
 
-def test_helper_fetch():
-    """Test the helper fetch_live_players() which uses RCON class under the hood."""
-    print("\n== fetch_live_players() Test ==", flush=True)
-    try:
-        players, err = fetch_live_players(SERVER)
-        print("Players:", players, flush=True)
-        print("Error:", err, flush=True)
-    except Exception as e:
-        print(f"fetch_live_players() Error ({type(e).__name__}): {e}", flush=True)
-
-
-if __name__ == "__main__":
-    print("Starting RCON HTTP API tests...", flush=True)
-    test_http_api()
-    test_rcon_class()
-    test_helper_fetch()
-    print("RCON HTTP API tests complete.", flush=True)
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.sock:
+            self.sock.close()
