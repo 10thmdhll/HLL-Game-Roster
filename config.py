@@ -5,12 +5,12 @@ SERVERS = {
     "HLL Training": {
         "host": "rcon.10thmd.org",
         "port": 8010,
-        "password": "fd4171e8-e0c7-4f84-995a-1f0171e5a7c5"
+        "password": "fd4171e8e0c74f84995a1f0171e5a7c5"
     },
     "HLL East":{
         "host": "rcon.10thmd.org",
         "port": 8011,
-        "password": "fd4171e8-e0c7-4f84-995a-1f0171e5a7c5"
+        "password": "fd4171e8e0c74f84995a1f0171e5a7c5"
     }
 }
 
