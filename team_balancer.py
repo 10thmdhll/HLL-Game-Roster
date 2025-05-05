@@ -18,7 +18,8 @@ def build_teams(players, roster_data, mode="two_teams"):
             print(f"Unmatched player: {pid_str}")
 
     # Group players by role and assignment
-    roles = defaultdict(lambda: {"players": [], "role_info": None})
+    roles = defaultdict(list)
+    role_infos = {}
     for pid in matched:
         role_info = roster_data[pid]
         key = (
@@ -27,16 +28,15 @@ def build_teams(players, roster_data, mode="two_teams"):
             role_info.get("platoon", ""),
             role_info.get("squad", "")
         )
-        roles[key]["players"].append(pid)
-        roles[key]["role_info"] = role_info  # Store role_info with the group
+        roles[key].append(pid)
+        role_infos[key] = role_info  # Store one example role_info for each key
 
     # Build squads within role caps
     team1, team2 = [], []
     team_toggle = True
 
-    for key, value in roles.items():
-        group = value["players"]
-        role_info = value["role_info"]
+    for key, group in roles.items():
+        role_info = role_infos.get(key, {})
         role_type = role_info.get("role_type", "infantry")
         max_size = role_info.get("squad_size", 6 if role_type == "infantry" else 3)
 
