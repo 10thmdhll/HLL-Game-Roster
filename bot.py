@@ -1,7 +1,7 @@
 import os
 import discord
 from discord import app_commands
-import subprocess
+import asyncio
 import config
 from dotenv import load_dotenv
 
@@ -45,23 +45,29 @@ async def roster(
     if mode:
         args.append(mode)
 
-    proc = subprocess.run(args, capture_output=True)
-    if proc.returncode == 0:
-        if os.path.exists("poster_output/poster_latest.png"):
-            embed = discord.Embed(
-                title="Roster Generated",
-                description=f"Server: `{server}`\nMode: `{mode}`",
-                color=0x00ffcc
-            )
-            embed.set_image(url="attachment://poster_latest.png")
-            #file = discord.File("poster_output/poster_latest.png", filename="poster_latest.png")
-            #await interaction.followup.send(embed=embed, file=file)
-            await interaction.followup.send(embed=embed, file=file)
-        else:
-            await interaction.followup.send("Roster image could not be generated.")
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            *args,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await proc.communicate()
+    except Exception as e:
+        await interaction.followup.send(f"Error running main.py: `{str(e)}`")
+        return
 
+    if proc.returncode == 0 and os.path.exists("poster_output/poster_latest.png"):
+        server_name = config.SERVERS[server].get("name", server)
+        embed = discord.Embed(
+            title=f"{server_name} - Roster Generated",
+            description=f"Mode: `{mode}`",
+            color=0x00ffcc
+        )
+        embed.set_image(url="attachment://poster_latest.png")
+        file = discord.File("poster_output/poster_latest.png", filename="poster_latest.png")
+        await interaction.followup.send(embed=embed)
     else:
-        error_msg = proc.stderr.decode().strip().splitlines()[-1] if proc.stderr else "Unknown error."
+        error_msg = stderr.decode().strip().splitlines()[-1] if stderr else "Unknown error."
         await interaction.followup.send(f"Roster generation failed: `{error_msg}`")
 
 @roster.autocomplete("server")
@@ -90,4 +96,5 @@ async def mode_autocomplete(
 token = os.getenv("DISCORD_BOT_TOKEN")
 if not token:
     raise ValueError("DISCORD_BOT_TOKEN is not set in your environment or .env file.")
+
 client.run(token)
