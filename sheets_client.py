@@ -15,18 +15,24 @@ def fetch_roster_data():
 
     role_map = {}
     for row in designations:
-        key = (row["Company"].strip(), row["Platoon"].strip(), row.get("Squad", "").strip())
+        key = (
+            str(row["Company"]).strip(),
+            str(row["Platoon"]).strip(),
+            str(row.get("Squad", "")).strip()
+        )
         role_map[key] = {
-            "role_type": row["Type"].strip().lower(),
+            "role_type": str(row["Type"]).strip().lower(),
             "squad_size": int(row["Squad Size"])
         }
 
     roster_data = {}
     for row in main_roster:
-        sid = row["RCON ID"].strip()
-        company = row["Company"].strip()
-        platoon = row["Platoon"].strip()
-        squad = row.get("Squad", "").strip()
+        sid = str(row.get("RCON ID", row.get("player_id", "")).strip())
+        if not sid:
+            continue
+        company = str(row["Company"]).strip()
+        platoon = str(row["Platoon"]).strip()
+        squad = str(row.get("Squad", "")).strip()
 
         key_full = (company, platoon, squad)
         key_partial = (company, platoon, "")
