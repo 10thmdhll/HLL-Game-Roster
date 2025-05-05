@@ -1,27 +1,27 @@
-from hll_rcon import RCON
-import config
-import logging
+import socket
 
-def fetch_live_players(server_name):
-    """
-    Attempts to connect to the specified RCON server and fetch a list of SteamIDs.
-    Returns a tuple: (steam_id_list, error_message)
-    If the request fails, steam_id_list is empty and error_message contains the reason.
-    """
-    server = config.SERVERS[server_name]
-    try:
-        with RCON(server['host'], server['port'], server['password']) as rcon:
-            response = rcon.send_command('Players')
-    except Exception as e:
-        logging.error(f"Failed to fetch players from RCON server '{server_name}': {e}")
-        return [], f"Failed to fetch players from RCON server '{server_name}': {e}"
+class RCON:
+    def __init__(self, host, port, password):
+        self.host = host
+        self.port = port
+        self.password = password
+        self.socket = None
 
-    steam_ids = []
-    for line in response.splitlines():
-        parts = line.strip().split()
-        for part in parts:
-            if part.isdigit() and len(part) >= 17:
-                steam_ids.append(part)
-                break
+    def __enter__(self):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.settimeout(5)
+        self.socket.connect((self.host, self.port))
+        self._auth()
+        return self
 
-    return steam_ids, None
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.socket:
+            self.socket.close()
+
+    def _auth(self):
+        self.socket.sendall((self.password + "\n").encode())
+
+    def send_command(self, command):
+        self.socket.sendall((command + "\n").encode())
+        data = self.socket.recv(4096).decode()
+        return data
