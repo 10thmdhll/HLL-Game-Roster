@@ -5,7 +5,14 @@ import subprocess
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-@bot.slash_command(name="roster", description="Generate and post the current roster.")
+@bot.tree.command(
+    name="roster",
+    description="Generate and post the current roster."
+)
+@app_commands.describe(
+    choice="Server",
+    description="Pick which HLL Server to look for players"
+)
 async def roster(ctx, server: str = None, mode: str = "two_teams"):
     await ctx.defer()
     args = ["python", "main.py"]
