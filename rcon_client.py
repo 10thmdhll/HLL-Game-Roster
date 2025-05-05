@@ -6,8 +6,7 @@ def fetch_live_players(server_name):
     server = config.SERVERS[server_name]
     try:
         with RCON(server['host'], server['port'], server['password']) as rcon:
-            response = rcon.send_command('Players')
-            print("Raw API response:\n", response)
+            response = rcon.send_command('players')
             players = response.strip().splitlines()
             print("Parsed steam IDs:\n", players)
             return players, None
