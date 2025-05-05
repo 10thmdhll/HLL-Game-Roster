@@ -1,46 +1,54 @@
 from collections import defaultdict
 
 def build_teams(players, roster_data, mode="two_teams"):
-    """
-    Build teams from live players and roster data based on unit structure.
-    players: List of player SteamIDs (from RCON)
-    roster_data: Dict mapping SteamID -> {company, platoon, squad, role_type, squad_size}
-    mode: "one_team" or "two_teams"
-    """
-    grouped = defaultdict(list)
+    print(f"Building teams with mode: {mode}")
+    print(f"Incoming players: {players}")
+    print(f"Roster data keys: {list(roster_data.keys())[:10]}...")  # sample only
 
-    for steam_id in players:
-        player_info = roster_data.get(steam_id)
-        if not player_info:
-            continue  # Skip unmatched
-        key = (player_info['company'], player_info['platoon'], player_info['squad'], player_info['role_type'])
-        grouped[key].append(steam_id)
+    matched = []
+    unmatched = []
 
-    squads = []
-    for (company, platoon, squad, role_type), members in grouped.items():
-        max_size = player_info.get('squad_size', 6 if role_type == 'infantry' else 3 if role_type == 'armor' else 2)
-        while len(members) > max_size:
-            squads.append({
-                'squad': f"{company}-{platoon}-{squad}",
-                'role_type': role_type,
-                'players': members[:max_size]
-            })
-            members = members[max_size:]
-        if len(members) >= (3 if role_type == 'infantry' else max_size):
-            squads.append({
-                'squad': f"{company}-{platoon}-{squad}",
-                'role_type': role_type,
-                'players': members
-            })
+    for pid in players:
+        pid_str = str(pid).strip()
+        if pid_str in roster_data:
+            matched.append(pid_str)
+            print(f"Matched player: {pid_str} → {roster_data[pid_str]}")
+        else:
+            unmatched.append(pid_str)
+            print(f"Unmatched player: {pid_str}")
 
-    if mode == "one_team":
-        return squads, []
+    # Group players by role and assignment
+    roles = defaultdict(list)
+    for pid in matched:
+        role_info = roster_data[pid]
+        key = (
+            role_info.get("role_type", "infantry"),
+            role_info.get("company", ""),
+            role_info.get("platoon", ""),
+            role_info.get("squad", "")
+        )
+        roles[key].append(pid)
 
-    # two-team balancing
+    # Build squads within role caps
     team1, team2 = [], []
-    flip = True
-    for squad in squads:
-        (team1 if flip else team2).append(squad)
-        flip = not flip
+    team_toggle = True
+
+    for key, group in roles.items():
+        role_type, company, platoon, squad = key
+        role_info = roster_data[group[0]]  # first player as base for config
+        max_size = role_info.get("squad_size", 6 if role_type == "infantry" else 3)
+
+        # Split large squads into valid subgroups
+        subgroups = [group[i:i+max_size] for i in range(0, len(group), max_size)]
+
+        for squad in subgroups:
+            if mode == "one_team":
+                team1.append(squad)
+            else:
+                if team_toggle:
+                    team1.append(squad)
+                else:
+                    team2.append(squad)
+                team_toggle = not team_toggle
 
     return team1, team2
