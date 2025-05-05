@@ -5,6 +5,8 @@ import subprocess
 import config
 from dotenv import load_dotenv
 
+load_dotenv()
+
 class MyClient(discord.Client):
     def __init__(self):
         super().__init__(intents=discord.Intents.default())
@@ -29,6 +31,14 @@ async def roster(
 ):
     await interaction.response.defer()
 
+    if server and server not in config.SERVERS:
+        await interaction.followup.send(f"Invalid server: {server}")
+        return
+
+    if mode not in getattr(config, "ROSTER_MODES", ["one_team", "two_teams"]):
+        await interaction.followup.send(f"Invalid mode: {mode}")
+        return
+
     args = ["python", "main.py"]
     if server:
         args.append(server)
@@ -37,7 +47,11 @@ async def roster(
 
     proc = subprocess.run(args, capture_output=True)
     if proc.returncode == 0:
-        await interaction.followup.send(file=discord.File("poster_output/poster_latest.png"))
+        embed = discord.Embed(title="Roster Generated", description=f"Server: `{server}`
+Mode: `{mode}`", color=0x00ffcc)
+        embed.set_image(url="attachment://poster_latest.png")
+        file = discord.File("poster_output/poster_latest.png", filename="poster_latest.png")
+        await interaction.followup.send(embed=embed, file=file)
     else:
         error_msg = proc.stderr.decode().strip().splitlines()[-1] if proc.stderr else "Unknown error."
         await interaction.followup.send(f"Roster generation failed: `{error_msg}`")
@@ -65,5 +79,4 @@ async def mode_autocomplete(
         if current.lower() in opt.lower()
     ]
 
-load_dotenv()
 client.run(os.getenv("DISCORD_BOT_TOKEN"))
