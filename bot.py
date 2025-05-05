@@ -82,4 +82,7 @@ async def mode_autocomplete(
         if current.lower() in opt.lower()
     ]
 
-client.run(os.getenv("DISCORD_BOT_TOKEN"))
+token = os.getenv("DISCORD_BOT_TOKEN")
+if not token:
+    raise ValueError("DISCORD_BOT_TOKEN is not set in your environment or .env file.")
+client.run(token)
