@@ -16,14 +16,13 @@ def fetch_live_players(server_name):
 
 # test_rcon.py
 def main():
-    host = "rcon.10thmd.org"
-    port = 8010
+    host = "rcon.10thmd.org:8010/api/get_live_game_stats"
     pwd  = "readonly202505010000000000000000",
     name =  "10th MD Training Server"
 
     print(f"Testing RCON to {host}:{port}…")
     try:
-        with RCON(host, port, pwd) as client:
+        with RCON(host, pwd) as client:
             resp = client.send_command("players")  # or any valid HLL RCON command
             if resp:
                 print("RCON response:\n", resp)
