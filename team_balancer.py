@@ -1,10 +1,6 @@
 from collections import defaultdict
 
 def build_teams(players, roster_data, mode="two_teams"):
-    print(f"Building teams with mode: {mode}")
-    print(f"Incoming players: {players}")
-    print(f"Roster data keys: {list(roster_data.keys())[:10]}...")  # sample only
-
     matched = []
     unmatched = []
 
@@ -12,7 +8,6 @@ def build_teams(players, roster_data, mode="two_teams"):
         pid_str = str(pid).strip()
         if pid_str in roster_data:
             matched.append(pid_str)
-            print(f"Matched player: {pid_str} → {roster_data[pid_str]}")
         else:
             unmatched.append(pid_str)
             print(f"Unmatched player: {pid_str}")
