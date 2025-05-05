@@ -52,6 +52,8 @@ async def roster(
             stderr=asyncio.subprocess.PIPE
         )
         stdout, stderr = await proc.communicate()
+        print("STDOUT:\n", stdout.decode())
+        print("STDERR:\n", stderr.decode())
     except Exception as e:
         await interaction.followup.send(f"Error running main.py: `{str(e)}`")
         return
@@ -64,7 +66,6 @@ async def roster(
             color=0x00ffcc
         )
         embed.set_image(url="attachment://poster_latest.png")
-        file = discord.File("poster_output/poster_latest.png", filename="poster_latest.png")
         await interaction.followup.send(embed=embed)
     else:
         error_msg = stderr.decode().strip().splitlines()[-1] if stderr else "Unknown error."
