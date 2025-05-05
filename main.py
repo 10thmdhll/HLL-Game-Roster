@@ -32,7 +32,11 @@ def main():
         logging.error(error)
         print(error)
         return
-
+    if not players:
+        logging.warning("No players found on the server.")
+        print("No players found.")
+        return
+        
     # Load roster structure from Google Sheets
     roster_data = fetch_roster_data()
     team1, team2 = build_teams(players, roster_data, mode)
