@@ -44,6 +44,8 @@ def main():
 
     # Load roster structure from Google Sheets
     roster_data = fetch_roster_data()
+    print("Roster data keys (RCON IDs):", list(roster_data.keys()))
+
     team1, team2 = build_teams(players, roster_data, mode)
 
     # Generate and send poster

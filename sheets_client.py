@@ -41,6 +41,8 @@ def fetch_roster_data():
             "squad_size": config.DEFAULT_SQUAD_SIZE
         }
 
+        print(f"Loaded sheet row: RCON ID = '{sid}' → {company}/{platoon}/{squad} ({role_info})")
+
         roster_data[sid] = {
             "company": company,
             "platoon": platoon,
