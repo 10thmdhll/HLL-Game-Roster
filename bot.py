@@ -47,14 +47,18 @@ async def roster(
 
     proc = subprocess.run(args, capture_output=True)
     if proc.returncode == 0:
-        embed = discord.Embed(
-            title="Roster Generated",
-            description=f"Server: `{server}`\nMode: `{mode}`",
-            color=0x00ffcc
-        )
-        embed.set_image(url="attachment://poster_latest.png")
-        file = discord.File("poster_output/poster_latest.png", filename="poster_latest.png")
-        await interaction.followup.send(embed=embed, file=file)
+        if os.path.exists("poster_output/poster_latest.png"):
+            embed = discord.Embed(
+                title="Roster Generated",
+                description=f"Server: `{server}`\nMode: `{mode}`",
+                color=0x00ffcc
+            )
+            embed.set_image(url="attachment://poster_latest.png")
+            file = discord.File("poster_output/poster_latest.png", filename="poster_latest.png")
+            await interaction.followup.send(embed=embed, file=file)
+        else:
+            await interaction.followup.send("Roster image could not be generated.")
+
     else:
         error_msg = proc.stderr.decode().strip().splitlines()[-1] if proc.stderr else "Unknown error."
         await interaction.followup.send(f"Roster generation failed: `{error_msg}`")
