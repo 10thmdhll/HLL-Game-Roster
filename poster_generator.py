@@ -1,29 +1,26 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
 from datetime import datetime
+from sheets_client import fetch_roster_data  # Added import to get player names
 
 # Fixed canvas width
 CANVAS_WIDTH = 1000
-FONT_PATH    = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-FONT_SIZE    = 24
-LINE_HEIGHT  = 30
-MARGIN       = 40
-COLUMN_GAP   = 40  # space between team columns
+FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+FONT_SIZE = 24
+LINE_HEIGHT = 30
+MARGIN = 40
+COLUMN_GAP = 40  # space between team columns
 
 os.makedirs("poster_output", exist_ok=True)
 
 def measure_text(draw, text, font):
-    """
-    Returns (width, height) of text when drawn with this font.
-    """
+    """Returns (width, height) of text when drawn with this font."""
     x0, y0, x1, y1 = draw.textbbox((0, 0), text, font=font)
     return x1 - x0, y1 - y0
 
 
 def get_scaled_font(draw, text, max_width, start_size):
-    """
-    Scales down the font size until text width <= max_width.
-    """
+    """Scales down the font size until text width <= max_width."""
     size = start_size
     font = ImageFont.truetype(FONT_PATH, size)
     w, _ = measure_text(draw, text, font)
@@ -35,9 +32,10 @@ def get_scaled_font(draw, text, max_width, start_size):
 
 
 def generate_poster(team1, team2, mode):
-    """
-    Generates a poster always 1000px wide. Mode: 'one_team' or 'two_teams'.
-    """
+    """Generates a poster always 1000px wide. Mode: 'one_team' or 'two_teams'."""
+    # Fetch roster data to map IDs to Names
+    roster_data = fetch_roster_data()
+
     mode = mode.lower()
     if mode == "one_team":
         teams = [team1]
@@ -60,14 +58,18 @@ def generate_poster(team1, team2, mode):
 
     # create image
     image = Image.new("RGB", (CANVAS_WIDTH, canvas_height), color=(20, 20, 20))
-    draw  = ImageDraw.Draw(image)
+    draw = ImageDraw.Draw(image)
 
     # draw centered header
     header = f"HLL Roster - Mode: {mode}"
     header_font = get_scaled_font(draw, header, CANVAS_WIDTH - 2 * MARGIN, FONT_SIZE)
-    h_w, h_h    = measure_text(draw, header, header_font)
-    draw.text(((CANVAS_WIDTH - h_w) // 2, MARGIN // 2), header,
-              font=header_font, fill=(255, 255, 255))
+    h_w, h_h = measure_text(draw, header, header_font)
+    draw.text(
+        ((CANVAS_WIDTH - h_w) // 2, MARGIN // 2),
+        header,
+        font=header_font,
+        fill=(255, 255, 255)
+    )
 
     # draw columns and content
     y_start = MARGIN
@@ -77,24 +79,23 @@ def generate_poster(team1, team2, mode):
         # team label
         label = f"TEAM {idx+1}"
         label_font = get_scaled_font(draw, label, col_widths[idx], FONT_SIZE)
-        draw.text((x_offset, y_start), label,
-                  font=label_font, fill=(255, 215, 0))
+        draw.text((x_offset, y_start), label, font=label_font, fill=(255, 215, 0))
         y = y_start + LINE_HEIGHT
 
         # squads and players
         for squad in team:
             # squad title
-            title = f"{squad.get('squad','Unnamed Squad')}:"
+            title = f"{squad.get('squad', 'Unnamed Squad')}:"
             title_font = get_scaled_font(draw, title, col_widths[idx], FONT_SIZE)
-            draw.text((x_offset, y), title,
-                      font=title_font, fill=(200, 200, 200))
+            draw.text((x_offset, y), title, font=title_font, fill=(200, 200, 200))
             y += LINE_HEIGHT
-            # players
-            for player in squad.get("players", []):
-                bullet = f"• {player}"
+
+            # players (display Name instead of ID)
+            for pid in squad.get("players", []):
+                name = roster_data.get(str(pid), {}).get("Name", str(pid))
+                bullet = f"• {name}"
                 pl_font = get_scaled_font(draw, bullet, col_widths[idx] - 20, FONT_SIZE)
-                draw.text((x_offset + 20, y), bullet,
-                          font=pl_font, fill=(180, 180, 180))
+                draw.text((x_offset + 20, y), bullet, font=pl_font, fill=(180, 180, 180))
                 y += LINE_HEIGHT
 
     # save
