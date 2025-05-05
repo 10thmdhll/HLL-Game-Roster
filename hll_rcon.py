@@ -2,7 +2,7 @@ import requests
 
 class RCON:
     def __init__(self, host, port, token):
-        self.url = f"http://{host}:{port}/api/players"
+        self.url = f"http://{host}:{port}/api/get_players"
         self.token = token
 
     def __enter__(self):
