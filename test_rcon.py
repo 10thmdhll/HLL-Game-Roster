@@ -13,7 +13,7 @@ def test_direct_rcon():
     host = "rcon.10thmd.org"
     port = 8011
     pwd = "readonly202505010000000000000000"
-    api = "/api/get_live_game_stats"
+    api = "get_live_game_stats"
 
     print(f"\n== Direct RCON Test ==")
     print(f"Host: {host}\nPort: {port}\nPassword: {'*' * len(pwd)}\nAPI Endpoint: {api}")
