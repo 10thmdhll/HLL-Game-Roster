@@ -3,7 +3,7 @@ import os
 import logging
 from datetime import datetime
 
-from config import DEFAULT_SERVER, POSTER_OUTPUT_DIR, LOG_DIR
+from config import POSTER_OUTPUT_DIR, LOG_DIR
 from sheets_client import fetch_roster_data
 from rcon_client import fetch_live_players
 from team_balancer import build_teams
@@ -22,7 +22,7 @@ cleanup_old_files(LOG_DIR, days=15)
 cleanup_old_files(POSTER_OUTPUT_DIR, days=15)
 
 def main():
-    server = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_SERVER
+    server = sys.argv[1] if len(sys.argv) > 1 else ""
     mode = sys.argv[2] if len(sys.argv) > 2 else "two_teams"
     logging.info(f"Generating roster for server '{server}' with mode '{mode}'")
 
