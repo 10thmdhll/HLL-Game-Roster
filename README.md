@@ -33,34 +33,40 @@ A Python tool and Discord bot for the WWII mil-sim **Hell Let Loose** that:
 
 ## ⚙️ Installation
 
-`git clone https://github.com/10thmdhll/HLL-Game-Roster.git`
+```git clone https://github.com/10thmdhll/HLL-Game-Roster.git```
 
-`cd HLL-Game-Roster`
-`mkdir secrets`
+```cd HLL-Game-Roster```
+
+```mkdir secrets```
 
 # Create & activate virtual environment
-`python3 -m venv venv`
+```python3 -m venv venv```
 
-`source venv/bin/activate`
+```source venv/bin/activate```
 
 # Install dependencies
-`pip install --upgrade pip`
+```pip install --upgrade pip```
 
-`pip install -r requirements.txt`
+```pip install -r requirements.txt```
 
 ##📝 Configuration
 Copy the example env file:
 
-`cp default.env .env`
+```cp default.env .env```
 
 Edit .env with your values:
 
+```vi .env```
+
 Copy the example config.py file:
 
-`cp config_example.py config.py`
+```cp config_example.py config.py```
 
 Edit config with your values:
 
+```vi config.py```
+
+# Default config file
 GOOGLE_SHEET_ID = "IDofGoogleSheet"
 
 SERVERS = {
@@ -107,7 +113,7 @@ Ensure .env has DISCORD_BOT_TOKEN.
 
 Run the bot:
 
-`python bot.py`
+```python bot.py```
 
 In your server, use the slash command:
 
