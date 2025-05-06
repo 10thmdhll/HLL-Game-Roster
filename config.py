@@ -1,5 +1,4 @@
 GOOGLE_SHEET_ID = "1gSscLMptifdgKqfJ469vaX1EbriyZZqBE3Pqgjx0sro"
-DEFAULT_SERVER = "HLL Training"
 
 SERVERS = {
     "HLL Training": {
