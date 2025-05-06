@@ -52,8 +52,8 @@ async def roster(
             stderr=asyncio.subprocess.PIPE
         )
         stdout, stderr = await proc.communicate()
-        print("STDOUT:\n", stdout.decode())
-        print("STDERR:\n", stderr.decode())
+        #print("STDOUT:\n", stdout.decode())
+        #print("STDERR:\n", stderr.decode())
     except Exception as e:
         await interaction.followup.send(f"Error running main.py: `{str(e)}`")
         return
