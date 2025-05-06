@@ -42,4 +42,5 @@ class RCON:
         stats = stats or []
         # Extract and return player_id values
         ids = [str(item['player_id']) for item in stats if 'player_id' in item]
+        print(ids)
         return "".join(ids)
