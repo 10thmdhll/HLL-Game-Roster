@@ -36,6 +36,7 @@ A Python tool and Discord bot for the WWII mil-sim **Hell Let Loose** that:
 `git clone https://github.com/10thmdhll/HLL-Game-Roster.git`
 
 `cd HLL-Game-Roster`
+`mkdir secrets`
 
 # Create & activate virtual environment
 `python3 -m venv venv`
@@ -123,12 +124,38 @@ HLL-Game-Roster/
 ├── team_balancer.py       # Team-splitting logic
 ├── poster_generator.py    # Pillow image composition
 ├── discord_webhook.py     # Simple webhook poster
-├── sheets_client.py       # Google Sheets helper
+├── sheets_client.py       # Google Sheets helper -> based on very specific tab/column names.  See description below.
 ├── utils.py               # Shared utilities
 ├── config.py              # App-wide settings loader
 ├── default.env            # Example environment variables -> copy to .env
 ├── requirements.txt       # Pinned dependencies
 └── README.md              # ← You are here
+
+# sheets_client.py Breakdown
+Fetches the 'Main Roster' and 'Squad Designations' sheets and returns a dict mapping RCON ID strings to row dicts,
+explicitly including the 'Name' column.
+
+Must have a file from Google API named "google_service_account.json" in a folder called "secrets".  
+This can be downloaded in json format from Google Console and must not be edited.
+
+    try:
+        creds = Credentials.from_service_account_file(
+            "secrets/google_service_account.json",
+            scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
+        )
+
+main_roster is the variable passed to the other function calls
+sheet.worksheet("Main Roster") where "Main Roster is the actual name with the space of the sheet.
+designations is the variable passed to the other function calls
+sheet.worksheet("Squad Designations") where "Squad Designations" is the actual name with the space of the sheet.
+
+"Main Roster" Columns
+"RCON ID", "Name", "Company", "Platoon", "Squad"
+
+"Squad Designations" Columns
+"Company", "Platoon", "Squad", "Type", "Squad Size"
+--> Example:  Main Roster   		12345566433452545342, MyName, Able, First, First
+			  Squad Designations	Able, First, First, Infantry, 6
 
 📄 License
 This project is licensed under the MIT License. See LICENSE for details.
