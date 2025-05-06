@@ -1,23 +1,23 @@
-GOOGLE_SHEET_ID = "1gSscLMptifdgKqfJ469vaX1EbriyZZqBE3Pqgjx0sro"
+GOOGLE_SHEET_ID = "GOOLESHEETID"
 
 SERVERS = {
-    "HLL Training": {
-        "host": "rcon.10thmd.org",
+    "Server 1": {
+        "host": "127.0.0.1",
         "port": 8010,
-        "password": "readonly202505010000000000000000",
-        "name": "10th MD Training Server"
+        "password": "APIKEY",
+        "name": "SERVER NAME"
     },
-    "HLL East":{
-        "host": "rcon.10thmd.org",
+    "Server 2":{
+        "host": "127.0.0.1",
         "port": 8011,
-        "password": "readonly202505010000000000000000",
-        "name": "10th MD East Server"
+        "password": "APIKEY",
+        "name": "SERVER NAME"
     }
 }
 
 ROSTER_MODES = ["one_team", "two_teams"]
 
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1368969836423680041/E0EbnemcVt7U75xgqtNS0y8M9l6M2DSj5MY2Wy-jz63LSaqDYJFfVPKRL09tvQB0ZKsp"
+DISCORD_WEBHOOK_URL = "HOOKURL"
 
 EVENT_NAME = "Unit Training Event"
 
