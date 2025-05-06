@@ -12,6 +12,9 @@ env/
 secrets/
 *.json
 
+# Config
+config.py
+
 # Logs
 logs/
 *.log
