@@ -1,4 +1,5 @@
 discord.py
+oauth2client
 requests
 gspread
 google-auth
