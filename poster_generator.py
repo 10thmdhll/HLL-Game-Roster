@@ -6,7 +6,7 @@ from sheets_client import fetch_roster_data
 # Constants
 CANVAS_WIDTH = 1000
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-FONT_SIZE = 24
+FONT_SIZE = 20
 LINE_HEIGHT = 30
 MARGIN = 40
 COLUMN_GAP = 40  # space between team columns
