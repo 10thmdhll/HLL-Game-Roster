@@ -75,7 +75,7 @@ def generate_poster(team1, team2=None, mode='two_teams'):
     # Compute height
     rows_counts = [sum(1 + len(s.get('players', [])) for s in t) for t in teams]
     max_rows = rows_counts[0] if len(teams) == 1 else max(rows_counts)
-    canvas_height = MARGIN * 2 + max_rows * LINE_HEIGHT
+    canvas_height = MARGIN * 2 + max_rows * LINE_HEIGHT + 30
 
     # Column widths
     if len(teams) == 1:
@@ -91,13 +91,9 @@ def generate_poster(team1, team2=None, mode='two_teams'):
 
     # Header
     header = f"HLL Roster - Mode: {mode.replace('_', ' ').title()}"
-    header2 = f"-"
     header_font = get_scaled_font(draw, header, CANVAS_WIDTH - 2 * MARGIN, FONT_SIZE)
     hw, hh = measure_text(draw, header, header_font)
-    hw2, hh2 = measure_text(draw, header2, header_font)
     draw.text(((CANVAS_WIDTH - hw) // 2, MARGIN // 2), header,
-              font=header_font, fill=(255, 255, 255))
-    draw.text(((CANVAS_WIDTH - hw2) // 2, (hw + MARGIN) // 2), header2,
               font=header_font, fill=(255, 255, 255))
 
     # Draw teams
