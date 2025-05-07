@@ -7,7 +7,7 @@ from sheets_client import fetch_roster_data
 CANVAS_WIDTH = 1000
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 FONT_SIZE = 20
-LINE_HEIGHT = 40
+LINE_HEIGHT = 30
 MARGIN = 40
 COLUMN_GAP = 40  # space between team columns
 
@@ -97,6 +97,7 @@ def generate_poster(team1, team2=None, mode='two_teams'):
               font=header_font, fill=(255, 255, 255))
 
     # Draw teams
+    y = 20 + MARGIN
     for idx, team in enumerate(teams):
         x0 = MARGIN + idx * (col_widths[0] + COLUMN_GAP)
         y = MARGIN
