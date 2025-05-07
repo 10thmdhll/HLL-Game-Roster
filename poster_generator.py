@@ -90,14 +90,13 @@ def generate_poster(team1, team2=None, mode='two_teams'):
     draw = ImageDraw.Draw(image)
 
     # Header
-    header = f"HLL Roster - Mode: {mode.replace('_', ' ').title()}"
+    header = f"HLL Roster - Mode: {mode.replace('_', ' ').title()}/n"
     header_font = get_scaled_font(draw, header, CANVAS_WIDTH - 2 * MARGIN, FONT_SIZE)
     hw, hh = measure_text(draw, header, header_font)
     draw.text(((CANVAS_WIDTH - hw) // 2, MARGIN // 2), header,
               font=header_font, fill=(255, 255, 255))
 
     # Draw teams
-    y = 20 + MARGIN
     for idx, team in enumerate(teams):
         x0 = MARGIN + idx * (col_widths[0] + COLUMN_GAP)
         y = MARGIN
