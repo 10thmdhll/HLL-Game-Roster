@@ -94,9 +94,10 @@ def generate_poster(team1, team2=None, mode='two_teams'):
     header2 = f"-"
     header_font = get_scaled_font(draw, header, CANVAS_WIDTH - 2 * MARGIN, FONT_SIZE)
     hw, hh = measure_text(draw, header, header_font)
+    hw2, hh2 = measure_text(draw, header2, header_font)
     draw.text(((CANVAS_WIDTH - hw) // 2, MARGIN // 2), header,
               font=header_font, fill=(255, 255, 255))
-    draw.text(((CANVAS_WIDTH - hw) // 2, MARGIN // 2), header2,
+    draw.text(((CANVAS_WIDTH - hw2) // 2, (hw + MARGIN) // 2), header2,
               font=header_font, fill=(255, 255, 255))
 
     # Draw teams
