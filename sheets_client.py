@@ -20,7 +20,7 @@ def fetch_roster_data():
         sheet = client.open_by_key(config.GOOGLE_SHEET_ID)
         #print(f"Opened spreadsheet with key: {config.GOOGLE_SHEET_ID}")
 
-        main_roster = sheet.worksheet("Main Roster").get_all_records()
+        main_roster = sheet.worksheet("HLL Roster").get_all_records()
         #print(f"Fetched {len(main_roster)} rows from 'Main Roster'")
         designations = sheet.worksheet("Squad Designations").get_all_records()
         #print(f"Fetched {len(designations)} rows from 'Squad Designations'")
@@ -41,9 +41,9 @@ def fetch_roster_data():
         roster_data = {}
         for idx, row in enumerate(main_roster, start=1):
             #print(f"Roster row {idx}: {row}")
-            sid = str(row.get("RCON ID", "")).strip()
+            sid = str(row.get("Steam ID", "")).strip()
             if not sid:
-                print(f"Skipping row {idx}: no RCON ID")
+                print(f"Skipping row {idx}: no Steam ID")
                 continue
             Name = str(row.get("Name", "")).strip()
             company = str(row.get("Company", "")).strip()
