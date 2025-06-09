@@ -17,8 +17,6 @@ SERVERS = {
 
 ROSTER_MODES = ["one_team", "two_teams"]
 
-DISCORD_WEBHOOK_URL = "HOOKURL"
-
 EVENT_NAME = "Unit Training Event"
 
 POSTER_OUTPUT_DIR = "poster_output"
